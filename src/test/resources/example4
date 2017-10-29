@@ -1,0 +1,22 @@
+var qwerty = -5
+var i = 1 + 2 + 3 + 4
+println(4, i, qwerty + 4)
+fun f(x) { return x + 9 }
+if (i > 5) {
+    i = f(0)
+} else {
+    i = f(6)
+}
+var k = 16
+if (k > 6) {
+    var i = 5545454
+    k = k - 2
+    println(0, 0, 0, i)
+}
+println(i)
+println()
+println(4)
+var x = f(8)
+var y = f(f(x))
+println(x, y, 6)
+println(4, i, x, y)
