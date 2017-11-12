@@ -1,14 +1,16 @@
 package ru.spbau.mit
 
-fun getGreeting(): String {
-    val words = mutableListOf<String>()
-    words.add("Hello,")
-    
-    words.add("world!")
+import org.antlr.v4.runtime.BufferedTokenStream
+import org.antlr.v4.runtime.CharStreams
+import ru.spbau.mit.parser.FunLexer
+import ru.spbau.mit.parser.FunParser
+import java.nio.file.Path
+import java.nio.file.Paths
 
-    return words.joinToString(separator = " ")
-}
+
 
 fun main(args: Array<String>) {
-    println(getGreeting())
+
 }
+
+
