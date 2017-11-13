@@ -42,7 +42,7 @@ class Tests {
                 Function(Identifier("f"),
                         ParameterNames(listOf(Identifier("x"))),
                         Block(listOf(ReturnStatement(Identifier("x"))))),
-                PrintlnCall(Arguments(listOf())),
+                PrintlnCall(Arguments(emptyList())),
                 Assignment(Identifier("x"), BinaryExpression(
                         Identifier("x"), Operator.PLUS, FunctionCall(
                             Identifier("f"), Arguments(listOf(Identifier("x"))))))))),
@@ -113,6 +113,4 @@ class Tests {
             |println(f(105, 905))
             |""".trimMargin()))
     }
-
-
 }

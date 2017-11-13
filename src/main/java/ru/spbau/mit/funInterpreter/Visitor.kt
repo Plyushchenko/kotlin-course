@@ -10,14 +10,14 @@ class Visitor: FunBaseVisitor<Node>() {
     }
 
     override fun visitBlock(ctx: FunParser.BlockContext): Block {
-        return Block(ctx.statement().map {
+        val statements = ctx.statement().map {
             visit(it) as Statement
-        }.toList())
+        }.toList()
+        return Block(statements)
     }
 
-    override fun visitBlockWithBraces(ctx: FunParser.BlockWithBracesContext): Block {
-        return visitBlock(ctx.block())
-    }
+    override fun visitBlockWithBraces(ctx: FunParser.BlockWithBracesContext): Block =
+            visitBlock(ctx.block())
 
     override fun visitStatement(ctx: FunParser.StatementContext): Statement {
         return visit(ctx.assignment()
@@ -45,7 +45,7 @@ class Visitor: FunBaseVisitor<Node>() {
     }
 
     override fun visitParameterNames(ctx: FunParser.ParameterNamesContext): ParameterNames {
-        val parameterNamesAsContext = ctx.IDENTIFIER() ?: return ParameterNames(listOf())
+        val parameterNamesAsContext = ctx.IDENTIFIER() ?: return ParameterNames(emptyList())
         val parameterNames = parameterNamesAsContext.map {
             Identifier(it.text)
         }.toList()
@@ -107,7 +107,7 @@ class Visitor: FunBaseVisitor<Node>() {
     }
 
     override fun visitArguments(ctx: FunParser.ArgumentsContext): Arguments {
-        val argsAsContext = ctx.expression() ?: return Arguments(listOf())
+        val argsAsContext = ctx.expression() ?: return Arguments(emptyList())
         val args = argsAsContext.map {
             visit(it) as Expression
         }.toList()
@@ -120,5 +120,4 @@ class Visitor: FunBaseVisitor<Node>() {
         val rhs = visit(ctx.expression()) as Expression
         return BinaryExpression(lhs, operator, rhs)
     }
-
 }

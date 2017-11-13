@@ -9,13 +9,9 @@ class Interpreter(private val context: Context = Context(),
         val DEFAULT_PRINT_STREAM: PrintStream = System.out
     }
 
-    fun <T: Node> visit(node: T): Int? {
-        return node.accept(this)
-    }
+    fun <T: Node> visit(node: T): Int? = node.accept(this)
 
-    fun visitFile(file: File): Int? {
-        return visitBlock(file.block)
-    }
+    fun visitFile(file: File): Int? = visitBlock(file.block)
 
     fun visitBlock(block: Block): Int? {
          var result: Int? = null
@@ -73,9 +69,7 @@ class Interpreter(private val context: Context = Context(),
         return null
     }
 
-    fun visitReturnStatement(returnStatement: ReturnStatement): Int {
-        return visit(returnStatement.value)!!
-    }
+    fun visitReturnStatement(returnStatement: ReturnStatement): Int = visit(returnStatement.value)!!
 
     fun visitFunctionCall(functionCall: FunctionCall): Int {
         val result: Int?
@@ -122,14 +116,12 @@ class Interpreter(private val context: Context = Context(),
         }
     }
 
-    fun visitIdentifier(name: Identifier): Int? {
-        return context.getVariableValue(name)
-    }
+    fun visitIdentifier(name: Identifier): Int? = context.getVariableValue(name)
 
-    fun visitLiteral(literal: Literal): Int {
-        return literal.stringValue.toInt()
-    }
+    fun visitLiteral(literal: Literal): Int = literal.stringValue.toInt()
+
+    private val Int.bool get() = this != 0
+    private val Boolean.int get() = if (this) 1 else 0
 }
 
-val Int.bool get() = this != 0
-val Boolean.int get() = if (this) 1 else 0
+

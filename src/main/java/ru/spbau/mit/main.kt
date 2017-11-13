@@ -16,13 +16,9 @@ private class ThrowingListener: BaseErrorListener() {
     }
 }
 
-fun buildAST(path: Path): File {
-    return buildAST(FunLexer(CharStreams.fromPath(path)))
-}
+fun buildAST(path: Path): File = buildAST(FunLexer(CharStreams.fromPath(path)))
 
-internal fun buildAST(s: String): File {
-    return buildAST(FunLexer(CharStreams.fromString(s)))
-}
+internal fun buildAST(s: String): File = buildAST(FunLexer(CharStreams.fromString(s)))
 
 private fun buildAST(lexer: FunLexer): File {
     val throwingListener = ThrowingListener()

@@ -8,7 +8,7 @@ class Context(
         private val scopes: ArrayDeque<Scope> = ArrayDeque()
 ) {
     companion object {
-        val BUILT_IN_VARIABLE_NAMES: Set<Identifier> = setOf()
+        val BUILT_IN_VARIABLE_NAMES: Set<Identifier> = emptySet()
         val BUILT_IN_FUNCTION_NAMES = setOf(Identifier("println"))
     }
 
