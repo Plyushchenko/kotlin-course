@@ -1,75 +1,60 @@
 package ru.spbau.mit
 
-import java.io.InputStream
 import java.util.*
 
 class Solver(k: Int, internal val bookTitle: CharArray) {
     companion object {
-        fun read(inputStream: InputStream) : Solver {
-            val input = Scanner(inputStream)
-            val k = input.nextInt()
-            val bookTitle = input.next().toCharArray()
-            return Solver(k, bookTitle)
-        }
-
-        val IMPOSSIBLE = "IMPOSSIBLE".toCharArray()
+        private val IMPOSSIBLE = "IMPOSSIBLE".toCharArray()
+    }
+    private val unusedLetters: ArrayDeque<Char>
+    init {
+        val firstKLetters = 'a' until 'a' + k
+        val usedLetters = bookTitle.toSet()
+        unusedLetters = ArrayDeque(firstKLetters - usedLetters)
     }
 
-    private val unusedLetters  = (('a' until 'a' + k) - bookTitle.toSortedSet()).toSortedSet()
-    private val halfOfBookTitleSize = bookTitle.size / 2
-
     fun solve(): CharArray {
-        if (!removePairedQuestionMarks())
-            return IMPOSSIBLE
-        if (!removeSingleQuestionMarks())
-            return IMPOSSIBLE
-        return bookTitle
+        val ok = removePairedQuestionMarks() && removeSingleQuestionMarks()
+        return if (ok) bookTitle else IMPOSSIBLE
     }
 
     internal fun removeSingleQuestionMarks(): Boolean {
-        var i = 0
-        while (i < halfOfBookTitleSize) {
-            val correspondingIndex = getCorrespondingIndex(i)
-            if (bookTitle[i] == '?' || bookTitle[correspondingIndex] == '?') {
-                if (bookTitle[i] == '?') {
-                    bookTitle[i] = bookTitle[correspondingIndex]
-                } else {
-                    bookTitle[correspondingIndex] = bookTitle[i]
-                }
-            } else {
-                if (bookTitle[i] != bookTitle[correspondingIndex]) {
-                    return false
-                }
+        for (i in 0 until bookTitle.size / 2) {
+            val currentSymbol = bookTitle[i]
+            val correspondingIndex = i.getCorrespondingIndex
+            val correspondingSymbol = bookTitle[correspondingIndex]
+            when {
+                currentSymbol == '?' -> bookTitle[i] = correspondingSymbol
+                correspondingSymbol == '?' -> bookTitle[correspondingIndex] = currentSymbol
+                currentSymbol != correspondingSymbol -> return false
             }
-            i++
         }
         return true
     }
 
     internal fun removePairedQuestionMarks(): Boolean {
-        var i = halfOfBookTitleSize
-        while (i < bookTitle.size) {
-            val correspondingIndex = getCorrespondingIndex(i)
-            if (bookTitle[i] == '?' && bookTitle[correspondingIndex] == '?') {
+        for (i in bookTitle.size / 2 until bookTitle.size) {
+            val currentSymbol = bookTitle[i]
+            val correspondingIndex = i.getCorrespondingIndex
+            val correspondingSymbol = bookTitle[correspondingIndex]
+            if (currentSymbol == '?' && correspondingSymbol == '?') {
                 bookTitle[i] = getAndExtractMaxUnusedLetterOrA()
                 bookTitle[correspondingIndex] = bookTitle[i]
             }
-            i++
         }
         return unusedLetters.isEmpty()
     }
 
     private fun getAndExtractMaxUnusedLetterOrA(): Char {
-        if (unusedLetters.isEmpty())
-            return 'a'
-        val lastFromUnusedLetters = unusedLetters.last()
-        unusedLetters.remove(lastFromUnusedLetters)
-        return lastFromUnusedLetters
+        return if (unusedLetters.isEmpty()) 'a' else unusedLetters.removeLast()
     }
 
-    private fun getCorrespondingIndex(i: Int): Int = bookTitle.size - i - 1
+    private val Int.getCorrespondingIndex:Int get() = bookTitle.size - this - 1
 }
 
 fun main(args: Array<String>) {
-    print(Solver.read(System.`in`).solve())
+    val input = Scanner(System.`in`)
+    val k = input.nextInt()
+    val bookTitle = input.next().toCharArray()
+    print(Solver(k, bookTitle).solve())
 }
