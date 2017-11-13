@@ -1,0 +1,10 @@
+var x = 5
+fun f(y) {
+    var x = 10
+	return x
+}
+println(f(1), f(2))
+fun g(y) {
+	return x * y
+}
+println(g(0), g(10), g(6))

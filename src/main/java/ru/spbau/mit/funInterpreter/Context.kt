@@ -1,4 +1,4 @@
-package ru.spbau.mit
+package ru.spbau.mit.funInterpreter
 
 import java.util.*
 
@@ -10,11 +10,11 @@ class Context(
     companion object {
         val BUILT_IN_VARIABLE_NAMES: Set<Identifier> = setOf()
         val BUILT_IN_FUNCTION_NAMES = setOf(Identifier("println"))
-
     }
 
     data class Scope(val variables: MutableMap<Identifier, Int?> = mutableMapOf(),
-                     val functions: MutableMap<Identifier, Function> = mutableMapOf())
+                     val functions: MutableMap<Identifier, Function> = mutableMapOf()
+    )
 
     fun enterScope() {
         scopes.add(Scope())
@@ -31,22 +31,23 @@ class Context(
 
     fun addVariable(name: Identifier, value: Int?) {
         val currentScope = scopes.peekLast()
-        if (builtInVariableNames.contains(name)
-                || currentScope.variables.containsKey(name))
-            throw Exception()
-        currentScope.variables.put(name, value)
+        val variables = currentScope.variables
+        if (builtInVariableNames.contains(name) || variables.containsKey(name))
+            throw RedefinitionException(name.name)
+        variables.put(name, value)
     }
 
     fun addFunction(function: Function) {
         val currentScope = scopes.peekLast()
-        if (builtInFunctionNames.contains(function.name)
-                || currentScope.functions.containsKey(function.name))
-            throw Exception()
-        currentScope.functions.put(function.name, function)
+        val name = function.name
+        val functions = currentScope.functions
+        if (builtInFunctionNames.contains(name) || functions.containsKey(name))
+            throw RedefinitionException(name.name)
+        functions.put(name, function)
     }
 
     data class VariableInformation(val name: Identifier, val value: Int?, val scope: Scope)
-    private fun getVariableInformation(name: Identifier):  VariableInformation {
+    private fun getVariableInformation(name: Identifier): VariableInformation {
         val scopesIterator = scopes.descendingIterator()
         while (scopesIterator.hasNext())
         {
@@ -56,7 +57,7 @@ class Context(
                 return VariableInformation(name, variables.getValue(name), currentScope)
             }
         }
-        throw Exception()
+        throw NotFoundException(name.name)
     }
 
     fun getVariableValue(name: Identifier): Int? = getVariableInformation(name).value
@@ -71,8 +72,6 @@ class Context(
                 return currentScope.functions.getValue(name)
             }
         }
-        throw Exception()
+        throw NotFoundException(name.name)
     }
-
-
 }

@@ -1,15 +1,18 @@
-package ru.spbau.mit
+package ru.spbau.mit.funInterpreter
 
 import ru.spbau.mit.parser.FunBaseVisitor
 import ru.spbau.mit.parser.FunParser
 
 class Visitor: FunBaseVisitor<Node>() {
     override fun visitFile(ctx: FunParser.FileContext): File {
-        return File(visit(ctx.block()) as Block)
+        val block = visit(ctx.block()) as Block
+        return File(block)
     }
 
     override fun visitBlock(ctx: FunParser.BlockContext): Block {
-        return Block(ctx.statement().map { visit(it) as Statement }.toList())
+        return Block(ctx.statement().map {
+            visit(it) as Statement
+        }.toList())
     }
 
     override fun visitBlockWithBraces(ctx: FunParser.BlockWithBracesContext): Block {
@@ -24,51 +27,59 @@ class Visitor: FunBaseVisitor<Node>() {
                 ?: ctx.returnStatement()
                 ?: ctx.variable()
                 ?: ctx.whileLoop()
+                ?: ctx.printlnCall()
         ) as Statement
     }
 
     override fun visitFunction(ctx: FunParser.FunctionContext): Function {
-        val name = Identifier(ctx.IDENTIFIER()!!.text)
-        val parameterNames = visit(ctx.parameterNames())
-        val body = visit(ctx.blockWithBraces())
-        return Function(name, parameterNames as ParameterNames, body as Block)
+        val name = Identifier(ctx.IDENTIFIER().text)
+        val parameterNames = visit(ctx.parameterNames()) as ParameterNames
+        val body = visit(ctx.blockWithBraces()) as Block
+        return Function(name, parameterNames, body)
     }
 
     override fun visitVariable(ctx: FunParser.VariableContext): Variable {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val value = if (ctx.expression() != null) visit(ctx.expression()) else null
-        return Variable(name, value as Expression)
+        val value = ctx.expression() ?: return Variable(name, null)
+        return Variable(name, visit(value) as Expression)
     }
 
     override fun visitParameterNames(ctx: FunParser.ParameterNamesContext): ParameterNames {
-        return ParameterNames(ctx.IDENTIFIER()?.map { Identifier(it.text) }?.toList() ?: listOf())
+        val parameterNamesAsContext = ctx.IDENTIFIER() ?: return ParameterNames(listOf())
+        val parameterNames = parameterNamesAsContext.map {
+            Identifier(it.text)
+        }.toList()
+        return ParameterNames(parameterNames)
     }
 
     override fun visitWhileLoop(ctx: FunParser.WhileLoopContext): WhileLoop {
-        val condition = visit(ctx.expression())
-        val body = visit(ctx.blockWithBraces())
-        return WhileLoop(condition as Expression, body as Block)
+        val condition = visit(ctx.expression()) as Expression
+        val body = visit(ctx.blockWithBraces()) as Block
+        return WhileLoop(condition, body)
     }
 
     override fun visitIfOperator(ctx: FunParser.IfOperatorContext): IfOperator {
-        val condition = visit(ctx.expression())
-        val blocks = ctx.blockWithBraces().map { visit(it) }
-        return IfOperator(condition as Expression, blocks[0] as Block,
-                blocks.getOrNull(1) as Block?)
+        val condition = visit(ctx.expression()) as Expression
+        val blocks = ctx.blockWithBraces().map { visit(it) as Block }
+        val ifBlock = blocks[0]
+        val elseBlock = blocks.getOrNull(1)
+        return IfOperator(condition, ifBlock, elseBlock)
     }
 
     override fun visitAssignment(ctx: FunParser.AssignmentContext): Assignment {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val value = visit(ctx.expression())
-        return Assignment(name, value as Expression)
+        val value = visit(ctx.expression()) as Expression
+        return Assignment(name, value)
     }
 
     override fun visitReturnStatement(ctx: FunParser.ReturnStatementContext): ReturnStatement {
-        return ReturnStatement(visit(ctx.expression()) as Expression)
+        val value = visit(ctx.expression()) as Expression
+        return ReturnStatement(value)
     }
 
     override fun visitExpression(ctx: FunParser.ExpressionContext): Expression {
-        return visit(ctx.atomicExpression() ?: ctx.binaryExpression()) as Expression
+        val expressionToVisit = ctx.binaryExpression() ?: ctx.atomicExpression()
+        return visit(expressionToVisit) as Expression
     }
 
     override fun visitAtomicExpression(ctx: FunParser.AtomicExpressionContext): Expression {
@@ -80,29 +91,34 @@ class Visitor: FunBaseVisitor<Node>() {
         if (literalStringValue != null) {
             return Literal(literalStringValue.text)
         }
-        return visit(ctx.printlnCall() ?: ctx.functionCall() ?: ctx.expression()) as Expression
+        val expressionToVisit = ctx.functionCall() ?: ctx.expression()
+        return visit(expressionToVisit) as Expression
     }
 
     override fun visitFunctionCall(ctx: FunParser.FunctionCallContext): FunctionCall {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val arguments = visit(ctx.arguments())
-        return FunctionCall(name, arguments as Arguments)
+        val arguments = visit(ctx.arguments()) as Arguments
+        return FunctionCall(name, arguments)
     }
 
     override fun visitPrintlnCall(ctx: FunParser.PrintlnCallContext): PrintlnCall {
-        return PrintlnCall(visit(ctx.arguments()) as Arguments)
+        val arguments = visit(ctx.arguments()) as Arguments
+        return PrintlnCall(arguments)
     }
 
     override fun visitArguments(ctx: FunParser.ArgumentsContext): Arguments {
-        val args = ctx.expression()?.map { visit(it) as Expression }?.toList() ?: listOf()
+        val argsAsContext = ctx.expression() ?: return Arguments(listOf())
+        val args = argsAsContext.map {
+            visit(it) as Expression
+        }.toList()
         return Arguments(args)
     }
 
     override fun visitBinaryExpression(ctx: FunParser.BinaryExpressionContext): BinaryExpression {
-        val lhs = visit(ctx.atomicExpression())
+        val lhs = visit(ctx.atomicExpression()) as Expression
         val operator = Operator.operatorByStringValue(ctx.operator.text)!!
-        val rhs = visit(ctx.expression())
-        return BinaryExpression(lhs as Expression, operator, rhs as Expression)
+        val rhs = visit(ctx.expression()) as Expression
+        return BinaryExpression(lhs, operator, rhs)
     }
 
 }

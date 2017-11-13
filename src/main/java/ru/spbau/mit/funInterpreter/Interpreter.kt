@@ -1,17 +1,12 @@
-package ru.spbau.mit
+package ru.spbau.mit.funInterpreter
 
-import ru.spbau.mit.Operator.*
+import ru.spbau.mit.funInterpreter.Operator.*
 import java.io.PrintStream
 
-
-class Interpreter(private val context: Context,
+class Interpreter(private val context: Context = Context(),
                   private val printStream: PrintStream = DEFAULT_PRINT_STREAM) {
     companion object {
         val DEFAULT_PRINT_STREAM: PrintStream = System.out
-
-        fun interpret(ast: File) {
-            Interpreter(Context()).visit(ast)
-        }
     }
 
     fun <T: Node> visit(node: T): Int? {
@@ -22,21 +17,18 @@ class Interpreter(private val context: Context,
         return visitBlock(file.block)
     }
 
-     fun visitBlock(block: Block): Int? {
+    fun visitBlock(block: Block): Int? {
          var result: Int? = null
          context.enterScope()
-         block.statements.forEach {statement ->
+         for (statement in block.statements) {
              result = visit(statement)
-             if (result != null)
-             {
-                 context.leaveScope()
-                 return result
+             if (result != null) {
+                 break
              }
          }
          context.leaveScope()
          return result
     }
-
 
     fun visitFunction(function: Function): Int? {
         context.addFunction(function)
@@ -61,7 +53,6 @@ class Interpreter(private val context: Context,
             }
         }
         return result
-
     }
 
     fun visitIfOperator(ifOperator: IfOperator): Int? {
@@ -89,10 +80,12 @@ class Interpreter(private val context: Context,
     fun visitFunctionCall(functionCall: FunctionCall): Int {
         val result: Int?
         val function = context.getFunction(functionCall.name)
-        val args = functionCall.arguments.args.map { visit(it)!! }
+        val args = functionCall.arguments.args.map { visit(it) }
         val parameterNames = function.parameterNames.names
-        if (args.size != parameterNames.size)
-            throw Exception()
+        if (args.size != parameterNames.size) {
+            throw WrongArgumentsNumberException(functionCall.name.name, args.size,
+                    parameterNames.size)
+        }
         context.enterScope()
         for (i in args.indices) {
             context.addVariable(parameterNames[i], args[i])
@@ -103,7 +96,7 @@ class Interpreter(private val context: Context,
     }
 
     fun visitPrintlnCall(printlnCall: PrintlnCall): Int? {
-        val args = printlnCall.arguments.args.map { visit(it)!! }
+        val args = printlnCall.arguments.args.map { visit(it) }
         printStream.println(args.joinToString(" ") {it.toString()})
         return null
     }
@@ -115,7 +108,7 @@ class Interpreter(private val context: Context,
         return when(operator) {
             AND -> (lhs.bool && rhs.bool).int
             DIV -> lhs / rhs
-            EQ -> (lhs.int == rhs.int).int
+            EQ -> (lhs == rhs).int
             GEQ -> (lhs >= rhs).int
             GT -> (lhs > rhs).int
             LEQ -> (lhs <= rhs).int
@@ -123,7 +116,7 @@ class Interpreter(private val context: Context,
             MINUS -> lhs - rhs
             MOD -> lhs % rhs
             MUL -> lhs * rhs
-            NEQ -> (lhs.int != rhs.int).int
+            NEQ -> (lhs != rhs).int
             OR -> (lhs.bool || rhs.bool).int
             PLUS -> lhs + rhs
         }
@@ -139,5 +132,4 @@ class Interpreter(private val context: Context,
 }
 
 val Int.bool get() = this != 0
-val Int.int get() = this
 val Boolean.int get() = if (this) 1 else 0

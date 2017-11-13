@@ -1,10 +1,4 @@
-package ru.spbau.mit
-
-import org.antlr.v4.runtime.BufferedTokenStream
-import org.antlr.v4.runtime.CharStreams
-import ru.spbau.mit.parser.FunLexer
-import ru.spbau.mit.parser.FunParser
-import java.nio.file.Path
+package ru.spbau.mit.funInterpreter
 
 interface Node {
     fun accept(visitor: Interpreter): Int?
@@ -13,13 +7,6 @@ interface Statement: Node
 interface Expression: Statement
 
 data class File(val block: Block): Node {
-    companion object {
-        fun buildAST(path: Path): File {
-            val lexer = FunLexer(CharStreams.fromPath(path))
-            val parser = FunParser(BufferedTokenStream(lexer))
-            return Visitor().visitFile(parser.file())
-        }
-    }
     override fun accept(visitor: Interpreter): Int? {
         return visitor.visitFile(this)
     }
@@ -71,6 +58,12 @@ data class ReturnStatement(val value: Expression): Statement {
     }
 }
 
+data class PrintlnCall(val arguments: Arguments) : Statement {
+    override fun accept(visitor: Interpreter): Int? {
+        return visitor.visitPrintlnCall(this)
+    }
+}
+
 data class BinaryExpression(val lhs: Expression, val operator: Operator, val rhs: Expression):
         Expression {
     override fun accept(visitor: Interpreter): Int? {
@@ -78,15 +71,9 @@ data class BinaryExpression(val lhs: Expression, val operator: Operator, val rhs
     }
 }
 
-data class FunctionCall(val name: Identifier,  val arguments: Arguments): Expression {
+data class FunctionCall(val name: Identifier, val arguments: Arguments): Expression {
     override fun accept(visitor: Interpreter): Int? {
         return visitor.visitFunctionCall(this)
-    }
-}
-
-data class PrintlnCall(val arguments: Arguments) : Expression {
-    override fun accept(visitor: Interpreter): Int? {
-        return visitor.visitPrintlnCall(this)
     }
 }
 

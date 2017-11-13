@@ -1,8 +1,9 @@
-var i = 0
-println(4)
+var qwerty = -5
+var i = 1 + 2 + 3 + 4
+println(4, i, qwerty + 4)
 fun f(x) { return x + 9 }
 if (i > 5) {
-    i = f(x)
+    i = f(0)
 } else {
     i = f(6)
 }
