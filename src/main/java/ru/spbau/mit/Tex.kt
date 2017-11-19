@@ -6,6 +6,10 @@ annotation class TexElementMarker
 @TexElementMarker
 abstract class TexElement(open protected val options: List<String> = emptyList(),
                           open protected val arguments: List<String> = emptyList()) {
+    companion object {
+        val INDENT = " ".repeat(4)
+    }
+
     abstract fun render(builder: StringBuilder, indent: String)
 
     fun StringBuilder.appendOptions() {
@@ -38,13 +42,10 @@ class Text(private val text: String): TexElement(){
     }
 }
 
-abstract class Tag(override val options: List<String> = emptyList(),
+abstract class Tag(open val name: String,
+                   override val options: List<String> = emptyList(),
                    override val arguments: List<String> = emptyList()): TexElement() {
     val children = mutableListOf<TexElement>()
-
-    operator fun String.unaryPlus() {
-        children.add(Text(this))
-    }
 
     protected fun <T : TexElement> initTag(tag: T, init: T.() -> Unit): T {
         tag.init()
@@ -52,71 +53,6 @@ abstract class Tag(override val options: List<String> = emptyList(),
         return tag
     }
 
-    fun math(formula: String, init: Math.() -> Unit = {}) = initTag(Math(formula), init)
-}
-
-/*
-\name[options]{arguments}
- */
-abstract class SingleLineCommand(private val name: String,
-                                 override val arguments: List<String>,
-                                 override val options: List<String> = emptyList()): Tag() {
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append("$indent\\$name")
-        if (options.isNotEmpty()) {
-            builder.appendOptions()
-        }
-        if (arguments.isNotEmpty()) {
-            builder.appendArguments()
-        }
-        builder.newLine()
-    }
-}
-
-class Math(private val formula: String) : SingleLineCommand("math", listOf(formula)) {
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append("$indent$$formula$")
-        builder.newLine()
-    }
-}
-
-class UsePackage(packageName: String, override val options: List<String> = emptyList()):
-        SingleLineCommand("usepackage", listOf(packageName), options)
-
-class DocumentClass(documentClassName: String,
-                    override val options: List<String> = emptyList()):
-        SingleLineCommand("documentclass", listOf(documentClassName), options)
-
-/*
-\name[options]
-    something
-*/
-abstract class SingleLineCommandWithEffect(private val name: String,
-                                           override val options: List<String> = emptyList()):
-        Tag() {
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append("$indent\\$name")
-        if (options.isNotEmpty()) {
-            builder.appendOptions()
-        }
-        builder.newLine()
-        for (child in children) {
-            child.render(builder, indent + " ".repeat(4))
-        }
-    }
-}
-
-class Item(override val options: List<String> = emptyList()):
-        SingleLineCommandWithEffect("item", options)
-
-/*
-\begin[options]{name}
-.
-.
-\end{name}
- */
-abstract class MultiLineCommand(open protected val name: String,
-                                override val options: List<String> = emptyList()): Tag() {
     override fun render(builder: StringBuilder, indent: String) {
         builder.append("$indent\\begin{$name}")
         if (options.isNotEmpty()) {
@@ -124,12 +60,23 @@ abstract class MultiLineCommand(open protected val name: String,
         }
         builder.newLine()
         for (child in children) {
-            child.render(builder, indent + " ".repeat(4))
+            child.render(builder, indent + INDENT)
         }
         builder.append("$indent\\end{$name}")
         builder.newLine()
-
     }
+}
+
+abstract class Command(override val name: String,
+                       override val options: List<String> = emptyList(),
+                       override val arguments: List<String> = emptyList()):
+        Tag(name, options, arguments) {
+
+    operator fun String.unaryPlus() {
+        children.add(Text(this))
+    }
+
+    fun math(formula: String) = initTag(Math(formula), {})
 
     fun framed(init: Framed.() -> Unit) = initTag(Framed(), init)
 
@@ -145,7 +92,78 @@ abstract class MultiLineCommand(open protected val name: String,
     fun enumerate(options: List<String> = emptyList(), init: Enumerate.() -> Unit) =
             initTag(Enumerate(options), init)
 
+    fun customMulti(name: String, options: List<String> = emptyList(),
+                    init: CustomMultiLineCommand.() -> Unit) =
+            initTag(CustomMultiLineCommand(name, options), init)
+
+    fun customSingle(name: String, options: List<String> = emptyList(),
+                     init: CustomSingleLineCommand.() -> Unit = {}) =
+            initTag(CustomSingleLineCommand(name, options), init)
+
+    fun customSingleWithEffect(name: String, options: List<String> = emptyList(),
+                               init: CustomSingleLineCommandWithEffect.() -> Unit = {}) =
+            initTag(CustomSingleLineCommandWithEffect(name, options), init)
+
 }
+
+abstract class SingleLineCommand(override val name: String,
+                                 override val arguments: List<String>,
+                                 override val options: List<String> = emptyList()):
+        Command(name, arguments, options) {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent\\$name")
+        if (options.isNotEmpty()) {
+            builder.appendOptions()
+        }
+        if (arguments.isNotEmpty()) {
+            builder.appendArguments()
+        }
+        builder.newLine()
+    }
+}
+
+class CustomSingleLineCommand(name: String, arguments: List<String>,
+                              options: List<String> = emptyList()):
+        SingleLineCommand(name, arguments, options)
+
+class Math(private val formula: String) : SingleLineCommand("math", listOf(formula)) {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent$$formula$")
+        builder.newLine()
+    }
+}
+
+class UsePackage(packageName: String, override val options: List<String> = emptyList()):
+        SingleLineCommand("usepackage", listOf(packageName), options)
+
+class DocumentClass(documentClassName: String,
+                    override val options: List<String> = emptyList()):
+        SingleLineCommand("documentclass", listOf(documentClassName), options)
+
+abstract class SingleLineCommandWithEffect(override val name: String,
+                                           override val options: List<String> = emptyList()):
+        Command(name, options) {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent\\$name")
+        if (options.isNotEmpty()) {
+            builder.appendOptions()
+        }
+        builder.newLine()
+        for (child in children) {
+            child.render(builder, indent + INDENT)
+        }
+    }
+}
+
+class CustomSingleLineCommandWithEffect(name: String, options: List<String> = emptyList()):
+        SingleLineCommandWithEffect(name, options)
+
+class Item(override val options: List<String> = emptyList()):
+        SingleLineCommandWithEffect("item", options)
+
+abstract class MultiLineCommand(override val name: String,
+                                override val options: List<String> = emptyList()):
+        Command(name, options)
 
 class Framed(override val options: List<String> = emptyList()): MultiLineCommand("framed", options)
 
@@ -155,21 +173,18 @@ class Center: MultiLineCommand("center")
 
 class FlushRight: MultiLineCommand("flushright")
 
-/*
-\begin[options]{name}
-.
-\item[item.options]
-    something
- */
+class CustomMultiLineCommand(name: String, options: List<String> = emptyList()):
+        MultiLineCommand(name, options)
+
 class Itemize(override val options: List<String> = emptyList()):
-        MultiLineCommand("itemize", options) {
+        Tag("itemize", options) {
     fun item(options: List<String> = emptyList(), init: Item.() -> Unit) =
             initTag(Item(options), init)
 
 }
 
 class Enumerate(override val options: List<String> = emptyList()):
-        MultiLineCommand("enumerate", options) {
+        Tag("enumerate", options) {
     fun item(init: Item.() -> Unit) = initTag(Item(), init)
 }
 

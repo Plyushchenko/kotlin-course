@@ -36,18 +36,20 @@ class TestSource {
                 item {
                     + "You gotta see this"
                 }
-                itemize {
-                    item(listOf("W")) {
-                        + "Inner"
-                    }
-                    item(listOf("O")) {
-                        + "List"
-                    }
-                    item(listOf("W")) {
-                        + "Is"
-                    }
-                    item {
-                        + "Here"
+                item {
+                    itemize {
+                        item(listOf("W")) {
+                            +"Inner"
+                        }
+                        item(listOf("O")) {
+                            +"List"
+                        }
+                        item(listOf("W")) {
+                            +"Is"
+                        }
+                        item {
+                            +"Here"
+                        }
                     }
                 }
             }
@@ -61,16 +63,17 @@ class TestSource {
             |            Wicked or weakness?
             |        \item
             |            You gotta see this
-            |        \begin{itemize}
-            |            \item[W]
-            |                Inner
-            |            \item[O]
-            |                List
-            |            \item[W]
-            |                Is
-            |            \item
-            |                Here
-            |        \end{itemize}
+            |        \item
+            |            \begin{itemize}
+            |                \item[W]
+            |                    Inner
+            |                \item[O]
+            |                    List
+            |                \item[W]
+            |                    Is
+            |                \item
+            |                    Here
+            |            \end{itemize}
             |    \end{enumerate}
             |\end{document}
             |""".trimMargin()
@@ -130,6 +133,25 @@ class TestSource {
             |            LOOK TO THE LEFT
             |        \end{flushright}
             |    \end{framed}
+            |\end{document}
+            |""".trimMargin()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testCustomTags() {
+        val actual = document {
+            customMulti("Huge", listOf()) {
+                +"This text is huge"
+            }
+            customSingle("frac", listOf("1", "2"))
+        }.toString()
+        val expected = """
+            |\begin{document}
+            |    \begin{Huge}
+            |        This text is huge
+            |    \end{Huge}
+            |    \frac{1}{2}
             |\end{document}
             |""".trimMargin()
         assertEquals(expected, actual)
