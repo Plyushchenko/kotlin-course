@@ -8,7 +8,7 @@ class TestSource {
     @Test
     fun testSample1() {
         val solver = Solver(3, "a?c".toCharArray())
-        assertFalse(solver.removePairedQuestionMarks())
+        assertTrue(solver.removePairedQuestionMarks())
         assertFalse(solver.removeSingleQuestionMarks())
         Assert.assertArrayEquals(solver.solve(), "IMPOSSIBLE".toCharArray())
     }

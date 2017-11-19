@@ -21,7 +21,7 @@ class Solver(k: Int, internal val bookTitle: CharArray) {
     internal fun removeSingleQuestionMarks(): Boolean {
         for (i in 0 until bookTitle.size / 2) {
             val currentSymbol = bookTitle[i]
-            val correspondingIndex = i.getCorrespondingIndex
+            val correspondingIndex = i.correspondingIndex
             val correspondingSymbol = bookTitle[correspondingIndex]
             when {
                 currentSymbol == '?' -> bookTitle[i] = correspondingSymbol
@@ -35,21 +35,21 @@ class Solver(k: Int, internal val bookTitle: CharArray) {
     internal fun removePairedQuestionMarks(): Boolean {
         for (i in bookTitle.size / 2 until bookTitle.size) {
             val currentSymbol = bookTitle[i]
-            val correspondingIndex = i.getCorrespondingIndex
+            val correspondingIndex = i.correspondingIndex
             val correspondingSymbol = bookTitle[correspondingIndex]
             if (currentSymbol == '?' && correspondingSymbol == '?') {
-                bookTitle[i] = getAndExtractMaxUnusedLetterOrA()
-                bookTitle[correspondingIndex] = bookTitle[i]
+                val extractedLetter = getAndExtractMaxUnusedLetterOrA()
+                bookTitle[i] = extractedLetter
+                bookTitle[correspondingIndex] = extractedLetter
             }
         }
         return unusedLetters.isEmpty()
     }
 
-    private fun getAndExtractMaxUnusedLetterOrA(): Char {
-        return if (unusedLetters.isEmpty()) 'a' else unusedLetters.removeLast()
-    }
+    private fun getAndExtractMaxUnusedLetterOrA(): Char =
+            if (unusedLetters.isEmpty()) 'a' else unusedLetters.removeLast()
 
-    private val Int.getCorrespondingIndex:Int get() = bookTitle.size - this - 1
+    private val Int.correspondingIndex: Int get() = bookTitle.size - this - 1
 }
 
 fun main(args: Array<String>) {
