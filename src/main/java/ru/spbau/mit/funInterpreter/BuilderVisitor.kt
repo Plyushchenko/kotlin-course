@@ -17,18 +17,6 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
     override fun visitBlockWithBraces(ctx: FunParser.BlockWithBracesContext): Block =
             ctx.block().accept(this) as Block
 
-    override fun visitStatement(ctx: FunParser.StatementContext): Statement {
-        return (ctx.assignment()
-                ?: ctx.expression()
-                ?: ctx.function()
-                ?: ctx.ifOperator()
-                ?: ctx.returnStatement()
-                ?: ctx.variable()
-                ?: ctx.whileLoop()
-                ?: ctx.printlnCall()
-                ).accept(this) as Statement
-    }
-
     override fun visitFunction(ctx: FunParser.FunctionContext): Function {
         val name = Identifier(ctx.IDENTIFIER().text)
         val parameterNames = ctx.parameterNames().accept(this) as ParameterNames

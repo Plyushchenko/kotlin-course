@@ -16,25 +16,25 @@ private class ThrowingListener : BaseErrorListener() {
     }
 }
 
-fun buildAST(path: Path): File = buildAST(FunLexer(CharStreams.fromPath(path)))
+fun buildAST(path: Path): Node = buildAST(FunLexer(CharStreams.fromPath(path)))
 
-internal fun buildAST(s: String): File = buildAST(FunLexer(CharStreams.fromString(s)))
+internal fun buildAST(s: String): Node = buildAST(FunLexer(CharStreams.fromString(s)))
 
-private fun buildAST(lexer: FunLexer): File {
+private fun buildAST(lexer: FunLexer): Node {
     val throwingListener = ThrowingListener()
     lexer.removeErrorListeners()
     lexer.addErrorListener(throwingListener)
     val parser = FunParser(BufferedTokenStream(lexer))
     parser.removeErrorListeners()
     parser.addErrorListener(throwingListener)
-    return BuilderVisitor().visitFile(parser.file())
+    return parser.file().accept(BuilderVisitor())
 }
 
-internal fun interpretAST(ast: File) {
+internal fun interpretAST(ast: Node) {
     ast.accept(Interpreter())
 }
 
-internal fun interpretAST(ast: File, context: Context, printStream: PrintStream) {
+internal fun interpretAST(ast: Node, context: Context, printStream: PrintStream) {
     ast.accept(Interpreter(context, printStream))
 }
 

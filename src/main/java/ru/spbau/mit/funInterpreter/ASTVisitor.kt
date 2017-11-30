@@ -1,6 +1,6 @@
 package ru.spbau.mit.funInterpreter
 
-interface ASTVisitor<T> {
+interface ASTVisitor<out T> {
     fun visitFile(file: File): T
 
     fun visitBlock(block: Block): T
