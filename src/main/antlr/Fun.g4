@@ -77,4 +77,3 @@ LITERAL: '0' | (MINUS? [1-9][0-9]*);
 COMMENT: '//' ~[\r\n]* -> skip;
 
 WS: (' ' | '\t' | '\r'| '\n') -> skip;
-

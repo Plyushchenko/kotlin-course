@@ -55,10 +55,8 @@ class Interpreter(private val context: Context = Context(),
         var result: Int? = null
         if (visit(ifOperator.condition)!! != 0) {
             result = visit(ifOperator.body)
-        } else {
-            if (ifOperator.elseBody != null) {
-                result = visit(ifOperator.elseBody)
-            }
+        } else if (ifOperator.elseBody != null) {
+            result = visit(ifOperator.elseBody)
         }
         return result
     }

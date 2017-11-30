@@ -9,7 +9,7 @@ import java.io.PrintStream
 import java.nio.file.Path
 import java.nio.file.Paths
 
-private class ThrowingListener: BaseErrorListener() {
+private class ThrowingListener : BaseErrorListener() {
     override fun syntaxError(recognizer: Recognizer<*, *>?, offendingSymbol: Any?, line: Int,
                              charPositionInLine: Int, msg: String?, e: RecognitionException?) {
         throw ParseCancellationException("Syntax error! Line $line:$charPositionInLine, $msg")
@@ -48,14 +48,14 @@ internal fun interpretFile(path: Path, context: Context, printStream: PrintStrea
     interpretAST(ast, context, printStream)
 }
 
-fun main(args : Array<String>) {
+fun main(args: Array<String>) {
     try {
         if (args.isEmpty()) {
             println("First argument should be path to file which will be interpreted!")
             return
         }
         interpretFile(Paths.get(args[0]))
-    } catch (e : Exception) {
+    } catch (e: Exception) {
         println(e.message)
     }
 }
