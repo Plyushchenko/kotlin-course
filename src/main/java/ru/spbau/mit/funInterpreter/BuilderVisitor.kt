@@ -3,22 +3,22 @@ package ru.spbau.mit.funInterpreter
 import ru.spbau.mit.parser.FunBaseVisitor
 import ru.spbau.mit.parser.FunParser
 
-class Visitor : FunBaseVisitor<Node>() {
+class BuilderVisitor : FunBaseVisitor<Node>() {
     override fun visitFile(ctx: FunParser.FileContext): File {
-        val block = visit(ctx.block()) as Block
+        val block = ctx.block().accept(this) as Block
         return File(block)
     }
 
     override fun visitBlock(ctx: FunParser.BlockContext): Block {
-        val statements = ctx.statement().map { visit(it) as Statement }
+        val statements = ctx.statement().map { it.accept(this) as Statement }
         return Block(statements)
     }
 
     override fun visitBlockWithBraces(ctx: FunParser.BlockWithBracesContext): Block =
-            visitBlock(ctx.block())
+            ctx.block().accept(this) as Block
 
     override fun visitStatement(ctx: FunParser.StatementContext): Statement {
-        return visit(ctx.assignment()
+        return (ctx.assignment()
                 ?: ctx.expression()
                 ?: ctx.function()
                 ?: ctx.ifOperator()
@@ -26,20 +26,20 @@ class Visitor : FunBaseVisitor<Node>() {
                 ?: ctx.variable()
                 ?: ctx.whileLoop()
                 ?: ctx.printlnCall()
-        ) as Statement
+                ).accept(this) as Statement
     }
 
     override fun visitFunction(ctx: FunParser.FunctionContext): Function {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val parameterNames = visit(ctx.parameterNames()) as ParameterNames
-        val body = visit(ctx.blockWithBraces()) as Block
+        val parameterNames = ctx.parameterNames().accept(this) as ParameterNames
+        val body = ctx.blockWithBraces().accept(this) as Block
         return Function(name, parameterNames, body)
     }
 
     override fun visitVariable(ctx: FunParser.VariableContext): Variable {
         val name = Identifier(ctx.IDENTIFIER().text)
         val value = ctx.expression() ?: return Variable(name, null)
-        return Variable(name, visit(value) as Expression)
+        return Variable(name, value.accept(this) as Expression)
     }
 
     override fun visitParameterNames(ctx: FunParser.ParameterNamesContext): ParameterNames {
@@ -49,14 +49,14 @@ class Visitor : FunBaseVisitor<Node>() {
     }
 
     override fun visitWhileLoop(ctx: FunParser.WhileLoopContext): WhileLoop {
-        val condition = visit(ctx.expression()) as Expression
-        val body = visit(ctx.blockWithBraces()) as Block
+        val condition = ctx.expression().accept(this) as Expression
+        val body = ctx.blockWithBraces().accept(this) as Block
         return WhileLoop(condition, body)
     }
 
     override fun visitIfOperator(ctx: FunParser.IfOperatorContext): IfOperator {
-        val condition = visit(ctx.expression()) as Expression
-        val blocks = ctx.blockWithBraces().map { visit(it) as Block }
+        val condition = ctx.expression().accept(this) as Expression
+        val blocks = ctx.blockWithBraces().map { it.accept(this) as Block }
         val ifBlock = blocks[0]
         val elseBlock = blocks.getOrNull(1)
         return IfOperator(condition, ifBlock, elseBlock)
@@ -64,33 +64,33 @@ class Visitor : FunBaseVisitor<Node>() {
 
     override fun visitAssignment(ctx: FunParser.AssignmentContext): Assignment {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val value = visit(ctx.expression()) as Expression
+        val value = ctx.expression().accept(this) as Expression
         return Assignment(name, value)
     }
 
     override fun visitReturnStatement(ctx: FunParser.ReturnStatementContext): ReturnStatement {
-        val value = visit(ctx.expression()) as Expression
+        val value = ctx.expression().accept(this) as Expression
         return ReturnStatement(value)
     }
 
-    override fun visitIdentifierExpression(ctx: FunParser.IdentifierExpressionContext): Node =
-        Identifier(ctx.text)
+    override fun visitIdentifierExpression(ctx: FunParser.IdentifierExpressionContext): Identifier =
+            Identifier(ctx.text)
 
     override fun visitLiteralExpression(ctx: FunParser.LiteralExpressionContext): Literal =
-            Literal(ctx.LITERAL().text)
+            Literal(ctx.text)
 
     override fun visitBinaryExpression(ctx: FunParser.BinaryExpressionContext): BinaryExpression {
-        val lhs = visit(ctx.lhs) as Expression
+        val lhs = ctx.lhs.accept(this) as Expression
         val operator = Operator.operatorByStringValue(ctx.operator.text)!!
-        val rhs = visit(ctx.rhs) as Expression
+        val rhs = ctx.rhs.accept(this) as Expression
         return BinaryExpression(lhs, operator, rhs)
     }
 
     override fun visitExpressionInBrackets(ctx: FunParser.ExpressionInBracketsContext): Expression =
-            visit(ctx.expression()) as Expression
+            ctx.expression().accept(this) as Expression
 
     override fun visitPrintlnCall(ctx: FunParser.PrintlnCallContext): PrintlnCall {
-        val arguments = visit(ctx.arguments()) as Arguments
+        val arguments = ctx.arguments().accept(this) as Arguments
         return PrintlnCall(arguments)
     }
 
@@ -102,7 +102,7 @@ class Visitor : FunBaseVisitor<Node>() {
 
     override fun visitArguments(ctx: FunParser.ArgumentsContext): Arguments {
         val argsAsContext = ctx.expression() ?: return Arguments(emptyList())
-        val args = argsAsContext.map { visit(it) as Expression }
+        val args = argsAsContext.map { it.accept(this) as Expression }
         return Arguments(args)
     }
 }

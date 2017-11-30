@@ -4,20 +4,18 @@ import ru.spbau.mit.funInterpreter.Operator.*
 import java.io.PrintStream
 
 class Interpreter(private val context: Context = Context(),
-                  private val printStream: PrintStream = DEFAULT_PRINT_STREAM) {
+                  private val printStream: PrintStream = DEFAULT_PRINT_STREAM): ASTVisitor<Int?> {
     companion object {
         val DEFAULT_PRINT_STREAM: PrintStream = System.out
     }
 
-    fun <T: Node> visit(node: T): Int? = node.accept(this)
+    override fun visitFile(file: File): Int? = file.block.accept(this)
 
-    fun visitFile(file: File): Int? = visitBlock(file.block)
-
-    fun visitBlock(block: Block): Int? {
+    override fun visitBlock(block: Block): Int? {
          var result: Int? = null
          context.enterScope()
          for (statement in block.statements) {
-             result = visit(statement)
+             result = statement.accept(this)
              if (result != null) {
                  break
              }
@@ -26,24 +24,26 @@ class Interpreter(private val context: Context = Context(),
          return result
     }
 
-    fun visitFunction(function: Function): Int? {
+    override fun visitFunction(function: Function): Int? {
         context.addFunction(function)
         return null
     }
 
-    fun visitVariable(variable: Variable): Int? {
+    override fun visitParameterNames(parameterNames: ParameterNames): Int? = null
+
+    override fun visitVariable(variable: Variable): Int? {
         var value: Int? = null
         if (variable.value != null) {
-            value = visit(variable.value)
+            value = variable.value.accept(this)
         }
         context.addVariable(variable.name, value)
         return null
     }
 
-    fun visitWhileLoop(whileLoop: WhileLoop): Int? {
+    override fun visitWhileLoop(whileLoop: WhileLoop): Int? {
         var result: Int? = null
-        while (visit(whileLoop.condition)!! != 0) {
-            result = visit(whileLoop.body)
+        while (whileLoop.condition.accept(this) != 0) {
+            result = whileLoop.body.accept(this)
             if (result != null) {
                 break
             }
@@ -51,28 +51,29 @@ class Interpreter(private val context: Context = Context(),
         return result
     }
 
-    fun visitIfOperator(ifOperator: IfOperator): Int? {
+    override fun visitIfOperator(ifOperator: IfOperator): Int? {
         var result: Int? = null
-        if (visit(ifOperator.condition)!! != 0) {
-            result = visit(ifOperator.body)
+        if (ifOperator.condition.accept(this) != 0) {
+            result = ifOperator.body.accept(this)
         } else if (ifOperator.elseBody != null) {
-            result = visit(ifOperator.elseBody)
+            result = ifOperator.elseBody.accept(this)
         }
         return result
     }
 
-    fun visitAssignment(assignment: Assignment): Int? {
-        val intValue = visit(assignment.value)!!
+    override fun visitAssignment(assignment: Assignment): Int? {
+        val intValue = assignment.value.accept(this)!!
         context.assignVariable(assignment.name, intValue)
         return null
     }
 
-    fun visitReturnStatement(returnStatement: ReturnStatement): Int = visit(returnStatement.value)!!
+    override fun visitReturnStatement(returnStatement: ReturnStatement): Int =
+            returnStatement.value.accept(this)!!
 
-    fun visitFunctionCall(functionCall: FunctionCall): Int {
+    override fun visitFunctionCall(functionCall: FunctionCall): Int {
         val result: Int?
         val function = context.getFunction(functionCall.name)
-        val args = functionCall.arguments.args.map { visit(it) }
+        val args = functionCall.arguments.args.map { it.accept(this) }
         val parameterNames = function.parameterNames.names
         if (args.size != parameterNames.size) {
             throw WrongArgumentsNumberException(functionCall.name.name, args.size,
@@ -82,21 +83,21 @@ class Interpreter(private val context: Context = Context(),
         for (i in args.indices) {
             context.addVariable(parameterNames[i], args[i])
         }
-        result = visit(function.body)
+        result = function.body.accept(this)
         context.leaveScope()
         return result ?: 0
     }
 
-    fun visitPrintlnCall(printlnCall: PrintlnCall): Int? {
-        val args = printlnCall.arguments.args.map { visit(it) }
-        printStream.println(args.joinToString(" ") {it.toString()})
+    override fun visitPrintlnCall(printlnCall: PrintlnCall): Int? {
+        val args = printlnCall.arguments.args.map { it.accept(this) }
+        printStream.println(args.joinToString(" ") { it.toString() })
         return null
     }
 
-    fun visitBinaryExpression(binaryExpression: BinaryExpression): Int {
-        val lhs = visit(binaryExpression.lhs)!!
+    override fun visitBinaryExpression(binaryExpression: BinaryExpression): Int {
+        val lhs = binaryExpression.lhs.accept(this)!!
         val operator = binaryExpression.operator
-        val rhs = visit(binaryExpression.rhs)!!
+        val rhs = binaryExpression.rhs.accept(this)!!
         return when(operator) {
             AND -> (lhs.bool && rhs.bool).int
             DIV -> lhs / rhs
@@ -114,9 +115,11 @@ class Interpreter(private val context: Context = Context(),
         }
     }
 
-    fun visitIdentifier(name: Identifier): Int? = context.getVariableValue(name)
+    override fun visitArguments(arguments: Arguments): Int? = null
 
-    fun visitLiteral(literal: Literal): Int = literal.stringValue.toInt()
+    override fun visitIdentifier(name: Identifier): Int? = context.getVariableValue(name)
+
+    override fun visitLiteral(literal: Literal): Int = literal.stringValue.toInt()
 
     private val Int.bool get() = this != 0
 

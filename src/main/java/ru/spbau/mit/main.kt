@@ -27,15 +27,15 @@ private fun buildAST(lexer: FunLexer): File {
     val parser = FunParser(BufferedTokenStream(lexer))
     parser.removeErrorListeners()
     parser.addErrorListener(throwingListener)
-    return Visitor().visitFile(parser.file())
+    return BuilderVisitor().visitFile(parser.file())
 }
 
 internal fun interpretAST(ast: File) {
-    Interpreter().visit(ast)
+    ast.accept(Interpreter())
 }
 
 internal fun interpretAST(ast: File, context: Context, printStream: PrintStream) {
-    Interpreter(context, printStream).visit(ast)
+    ast.accept(Interpreter(context, printStream))
 }
 
 fun interpretFile(path: Path) {
