@@ -119,7 +119,6 @@ class Interpreter(private val context: Context = Context(),
     fun visitLiteral(literal: Literal): Int = literal.stringValue.toInt()
 
     private val Int.bool get() = this != 0
+
     private val Boolean.int get() = if (this) 1 else 0
 }
-
-

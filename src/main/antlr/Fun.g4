@@ -1,7 +1,7 @@
 grammar Fun;
 
 /*Problem statement says to have this rule, though it's unused*/
-file: block;
+file: block EOF;
 
 block: statement*;
 
@@ -32,29 +32,24 @@ assignment: IDENTIFIER '=' expression;
 
 returnStatement: 'return' expression;
 
-/*Kinda hack to avoid 'mutually left-recursive' error*/
-expression:  binaryExpression | atomicExpression;
-
-atomicExpression
-    : functionCall
-    | IDENTIFIER
-    | LITERAL
-    | '('expression ')';
+expression
+    : functionCall                                                       #functionCallExpression
+    | lhs = expression operator = (DIV | MOD | MUL) rhs = expression     #binaryExpression
+    | lhs = expression operator = (MINUS | PLUS) rhs = expression        #binaryExpression
+    | lhs = expression operator = (GEQ | GT | LEQ | LT) rhs = expression #binaryExpression
+    | lhs = expression operator = (EQ | NEQ) rhs = expression            #binaryExpression
+    | lhs = expression operator = AND rhs = expression                   #binaryExpression
+    | lhs = expression operator = OR rhs = expression                    #binaryExpression
+    | IDENTIFIER                                                         #identifierExpression
+    | LITERAL                                                            #literalExpression
+    | '('expression ')'                                                  #expressionInBrackets
+    ;
 
 printlnCall: 'println' '(' arguments ')';
 
 functionCall: IDENTIFIER '(' arguments ')';
 
 arguments: (expression (',' expression)*)?;
-
-binaryExpression
-    : atomicExpression operator = (DIV | MOD | MUL) expression
-    | atomicExpression operator = (MINUS | PLUS) expression
-    | atomicExpression operator = (GEQ | GT | LEQ | LT) expression
-    | atomicExpression operator = (EQ | NEQ) expression
-    | atomicExpression operator = AND expression
-    | atomicExpression operator = OR expression
-    ;
 
 AND: '&&';
 DIV: '/';

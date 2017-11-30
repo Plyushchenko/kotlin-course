@@ -27,33 +27,63 @@ class Tests {
 
     @Test
     fun correctASTTests() {
-        assertEquals(File(Block(listOf(
-                Variable(Identifier("i"), BinaryExpression(
-                        Literal("1"), Operator.PLUS, BinaryExpression(
-                        Literal("2"), Operator.PLUS, BinaryExpression(
-                        Literal("3"), Operator.PLUS, Literal("4"))))),
-                PrintlnCall(Arguments(listOf(Identifier("i"))))))),
-                    buildAST("""
-                        |var i = 1 + 2 + 3 + 4
-                        |println(i)
-                        |""".trimMargin()))
-        assertEquals(File(Block(listOf(
-                Variable(Identifier("x"), Literal("5")),
-                Function(Identifier("f"),
-                        ParameterNames(listOf(Identifier("x"))),
-                        Block(listOf(ReturnStatement(Identifier("x"))))),
-                PrintlnCall(Arguments(emptyList())),
-                Assignment(Identifier("x"), BinaryExpression(
-                        Identifier("x"), Operator.PLUS, FunctionCall(
-                            Identifier("f"), Arguments(listOf(Identifier("x"))))))))),
-                    buildAST("""
+        assertEquals(
+                File(Block(listOf(
+                        Variable(
+                            Identifier("i"),
+                            BinaryExpression(
+                                    BinaryExpression(
+                                            BinaryExpression(
+                                                    Literal("1"),
+                                                    Operator.MINUS,
+                                                    Literal("2")
+                                            ),
+                                            Operator.MINUS,
+                                            Literal("3")
+                                    ),
+                                    Operator.MINUS,
+                                    Literal("4")
+                            )
+                        ),
+                        PrintlnCall(Arguments(listOf(Identifier("i"))))
+                ))),
+                buildAST("""
+                    |var i = 1 - 2 - 3 - 4
+                    |println(i)
+                    |""".trimMargin()
+                )
+        )
+        assertEquals(
+                File(Block(listOf(
+                    Variable(Identifier("x"), Literal("5")),
+                    Function(
+                            Identifier("f"),
+                            ParameterNames(listOf(Identifier("x"))),
+                            Block(listOf(ReturnStatement(Identifier("x"))))
+                    ),
+                    PrintlnCall(Arguments(emptyList())),
+                    Assignment(
+                            Identifier("x"),
+                            BinaryExpression(
+                                    Identifier("x"),
+                                    Operator.PLUS,
+                                    FunctionCall(
+                                            Identifier("f"),
+                                            Arguments(listOf(Identifier("x")))
+                                    )
+                            )
+                    )
+                ))),
+                buildAST("""
                         |var x = 5
                         |fun f(x) {
                         |    return x
                         |}
                         |println()
                         |x = x + f(x)
-                        |""".trimMargin()))
+                        |""".trimMargin()
+                )
+        )
     }
 
     @Test(expected = ParseCancellationException::class)

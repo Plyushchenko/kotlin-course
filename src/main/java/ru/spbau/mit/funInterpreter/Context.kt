@@ -3,15 +3,13 @@ package ru.spbau.mit.funInterpreter
 import java.util.*
 
 class Context(private val builtInFunctionNames: Set<Identifier> = BUILT_IN_FUNCTION_NAMES,
-              private val scopes: ArrayDeque<Scope> = ArrayDeque()
-) {
+              private val scopes: ArrayDeque<Scope> = ArrayDeque()) {
     companion object {
         val BUILT_IN_FUNCTION_NAMES = setOf(Identifier("println"))
     }
 
     data class Scope(val variables: MutableMap<Identifier, Int?> = mutableMapOf(),
-                     val functions: MutableMap<Identifier, Function> = mutableMapOf()
-    )
+                     val functions: MutableMap<Identifier, Function> = mutableMapOf())
 
     fun enterScope() {
         scopes.add(Scope())

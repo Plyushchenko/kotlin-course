@@ -97,4 +97,3 @@ enum class Operator(val stringValue: String) {
         }
     }
 }
-

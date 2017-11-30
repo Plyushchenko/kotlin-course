@@ -1,3 +1,5 @@
+var c = 5 / ((10 / 2))
+println(c)
 var a = 10
 var b = 20
 if (a > b) {
