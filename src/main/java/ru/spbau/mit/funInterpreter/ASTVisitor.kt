@@ -9,8 +9,6 @@ interface ASTVisitor<out T> {
 
     fun visitVariable(variable: Variable): T
 
-    fun visitParameterNames(parameterNames: ParameterNames): T
-
     fun visitWhileLoop(whileLoop: WhileLoop): T
 
     fun visitIfOperator(ifOperator: IfOperator): T
@@ -24,8 +22,6 @@ interface ASTVisitor<out T> {
     fun visitPrintlnCall(printlnCall: PrintlnCall): T
 
     fun visitBinaryExpression(binaryExpression: BinaryExpression): T
-
-    fun visitArguments(arguments: Arguments): T
 
     fun visitIdentifier(name: Identifier): T
 

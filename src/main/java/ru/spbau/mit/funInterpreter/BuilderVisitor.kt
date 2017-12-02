@@ -19,7 +19,9 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
 
     override fun visitFunction(ctx: FunParser.FunctionContext): Function {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val parameterNames = ctx.parameterNames().accept(this) as ParameterNames
+        val parameterNames = ParameterNames(ctx.parameterNames().IDENTIFIER().map {
+            Identifier(it.text)
+        })
         val body = ctx.blockWithBraces().accept(this) as Block
         return Function(name, parameterNames, body)
     }
@@ -28,12 +30,6 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
         val name = Identifier(ctx.IDENTIFIER().text)
         val value = ctx.expression() ?: return Variable(name, null)
         return Variable(name, value.accept(this) as Expression)
-    }
-
-    override fun visitParameterNames(ctx: FunParser.ParameterNamesContext): ParameterNames {
-        val parameterNamesAsContext = ctx.IDENTIFIER() ?: return ParameterNames(emptyList())
-        val parameterNames = parameterNamesAsContext.map { Identifier(it.text) }
-        return ParameterNames(parameterNames)
     }
 
     override fun visitWhileLoop(ctx: FunParser.WhileLoopContext): WhileLoop {
@@ -81,19 +77,17 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
             ctx.expression().accept(this) as Expression
 
     override fun visitPrintlnCall(ctx: FunParser.PrintlnCallContext): PrintlnCall {
-        val arguments = ctx.arguments().accept(this) as Arguments
+        val arguments = Arguments(ctx.arguments().expression().map {
+            it.accept(this) as Expression
+        })
         return PrintlnCall(arguments)
     }
 
     override fun visitFunctionCall(ctx: FunParser.FunctionCallContext): FunctionCall {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val arguments = ctx.arguments().accept(this) as Arguments
+        val arguments = Arguments(ctx.arguments().expression().map {
+            it.accept(this) as Expression
+        })
         return FunctionCall(name, arguments)
-    }
-
-    override fun visitArguments(ctx: FunParser.ArgumentsContext): Arguments {
-        val argsAsContext = ctx.expression() ?: return Arguments(emptyList())
-        val args = argsAsContext.map { it.accept(this) as Expression }
-        return Arguments(args)
     }
 }

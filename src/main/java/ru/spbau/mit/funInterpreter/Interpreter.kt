@@ -28,8 +28,6 @@ class Interpreter(private val context: Context = Context(),
         return null
     }
 
-    override fun visitParameterNames(parameterNames: ParameterNames): Int? = null
-
     override fun visitVariable(variable: Variable): Int? {
         val value = variable.value?.accept(this)
         context.addVariable(variable.name, value)
@@ -93,8 +91,6 @@ class Interpreter(private val context: Context = Context(),
         val rhs = binaryExpression.rhs.accept(this)!!
         return operator(lhs, rhs)
     }
-
-    override fun visitArguments(arguments: Arguments): Int? = null
 
     override fun visitIdentifier(name: Identifier): Int? = context.getVariableValue(name)
 
