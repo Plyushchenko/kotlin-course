@@ -2,12 +2,7 @@ package ru.spbau.mit.funInterpreter
 
 import java.util.*
 
-class Context(private val builtInFunctionNames: Set<Identifier> = BUILT_IN_FUNCTION_NAMES,
-              private val scopes: ArrayDeque<Scope> = ArrayDeque()) {
-    companion object {
-        val BUILT_IN_FUNCTION_NAMES = setOf(Identifier("println"))
-    }
-
+class Context(private val scopes: ArrayDeque<Scope> = ArrayDeque()) {
     data class Scope(val variables: MutableMap<Identifier, Int?> = mutableMapOf(),
                      val functions: MutableMap<Identifier, Function> = mutableMapOf())
 
@@ -37,7 +32,7 @@ class Context(private val builtInFunctionNames: Set<Identifier> = BUILT_IN_FUNCT
         val currentScope = scopes.peekLast()
         val name = function.name
         val functions = currentScope.functions
-        if (builtInFunctionNames.contains(name) || functions.containsKey(name)) {
+        if (name.name == "println" || functions.containsKey(name)) {
             throw RedefinitionException(name.name)
         }
         functions.put(name, function)

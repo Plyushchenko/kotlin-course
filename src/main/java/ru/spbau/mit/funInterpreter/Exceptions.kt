@@ -13,7 +13,9 @@ class NotFoundException(name: String, type: Type
     companion object {
         enum class Type(val stringValue: String) {
             FUNCTION("function"),
-            VARIABLE("variable");
+            VARIABLE("variable"),
+            OPERATOR("operator");
         }
     }
 }
+

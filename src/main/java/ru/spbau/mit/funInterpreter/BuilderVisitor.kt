@@ -69,7 +69,10 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
 
     override fun visitBinaryExpression(ctx: FunParser.BinaryExpressionContext): BinaryExpression {
         val lhs = ctx.lhs.accept(this) as Expression
-        val operator = Operator.operatorByStringValue(ctx.operator.text)!!
+        val operatorStringValue = ctx.operator.text
+        val operator = BinaryExpression.Companion.Operator.operatorByStringValue(
+                operatorStringValue
+        ) ?: throw NotFoundException(operatorStringValue, NotFoundException.Companion.Type.OPERATOR)
         val rhs = ctx.rhs.accept(this) as Expression
         return BinaryExpression(lhs, operator, rhs)
     }
@@ -84,7 +87,7 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
 
     override fun visitFunctionCall(ctx: FunParser.FunctionCallContext): FunctionCall {
         val name = Identifier(ctx.IDENTIFIER().text)
-        val arguments = visit(ctx.arguments()) as Arguments
+        val arguments = ctx.arguments().accept(this) as Arguments
         return FunctionCall(name, arguments)
     }
 

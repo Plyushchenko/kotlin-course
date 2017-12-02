@@ -35,13 +35,13 @@ class Tests {
                                     BinaryExpression(
                                             BinaryExpression(
                                                     Literal("1"),
-                                                    Operator.MINUS,
+                                                    BinaryExpression.Companion.Operator.MINUS,
                                                     Literal("2")
                                             ),
-                                            Operator.MINUS,
+                                            BinaryExpression.Companion.Operator.MINUS,
                                             Literal("3")
                                     ),
-                                    Operator.MINUS,
+                                    BinaryExpression.Companion.Operator.MINUS,
                                     Literal("4")
                             )
                         ),
@@ -66,7 +66,7 @@ class Tests {
                             Identifier("x"),
                             BinaryExpression(
                                     Identifier("x"),
-                                    Operator.PLUS,
+                                    BinaryExpression.Companion.Operator.PLUS,
                                     FunctionCall(
                                             Identifier("f"),
                                             Arguments(listOf(Identifier("x")))

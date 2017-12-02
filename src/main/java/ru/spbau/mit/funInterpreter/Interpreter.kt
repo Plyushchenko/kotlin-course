@@ -1,6 +1,5 @@
 package ru.spbau.mit.funInterpreter
 
-import ru.spbau.mit.funInterpreter.Operator.*
 import java.io.PrintStream
 
 class Interpreter(private val context: Context = Context(),
@@ -32,10 +31,7 @@ class Interpreter(private val context: Context = Context(),
     override fun visitParameterNames(parameterNames: ParameterNames): Int? = null
 
     override fun visitVariable(variable: Variable): Int? {
-        var value: Int? = null
-        if (variable.value != null) {
-            value = variable.value.accept(this)
-        }
+        val value = variable.value?.accept(this)
         context.addVariable(variable.name, value)
         return null
     }
@@ -52,13 +48,10 @@ class Interpreter(private val context: Context = Context(),
     }
 
     override fun visitIfOperator(ifOperator: IfOperator): Int? {
-        var result: Int? = null
         if (ifOperator.condition.accept(this) != 0) {
-            result = ifOperator.body.accept(this)
-        } else if (ifOperator.elseBody != null) {
-            result = ifOperator.elseBody.accept(this)
+            return ifOperator.body.accept(this)
         }
-        return result
+        return ifOperator.elseBody?.accept(this)
     }
 
     override fun visitAssignment(assignment: Assignment): Int? {
@@ -98,21 +91,7 @@ class Interpreter(private val context: Context = Context(),
         val lhs = binaryExpression.lhs.accept(this)!!
         val operator = binaryExpression.operator
         val rhs = binaryExpression.rhs.accept(this)!!
-        return when(operator) {
-            AND -> (lhs.bool && rhs.bool).int
-            DIV -> lhs / rhs
-            EQ -> (lhs == rhs).int
-            GEQ -> (lhs >= rhs).int
-            GT -> (lhs > rhs).int
-            LEQ -> (lhs <= rhs).int
-            LT -> (lhs < rhs).int
-            MINUS -> lhs - rhs
-            MOD -> lhs % rhs
-            MUL -> lhs * rhs
-            NEQ -> (lhs != rhs).int
-            OR -> (lhs.bool || rhs.bool).int
-            PLUS -> lhs + rhs
-        }
+        return operator(lhs, rhs)
     }
 
     override fun visitArguments(arguments: Arguments): Int? = null
@@ -120,8 +99,4 @@ class Interpreter(private val context: Context = Context(),
     override fun visitIdentifier(name: Identifier): Int? = context.getVariableValue(name)
 
     override fun visitLiteral(literal: Literal): Int = literal.stringValue.toInt()
-
-    private val Int.bool get() = this != 0
-
-    private val Boolean.int get() = if (this) 1 else 0
 }
