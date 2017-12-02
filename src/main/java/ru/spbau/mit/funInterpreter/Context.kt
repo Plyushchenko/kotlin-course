@@ -2,9 +2,11 @@ package ru.spbau.mit.funInterpreter
 
 import java.util.*
 
-class Context(private val scopes: ArrayDeque<Scope> = ArrayDeque()) {
+class Context {
     data class Scope(val variables: MutableMap<Identifier, Int?> = mutableMapOf(),
                      val functions: MutableMap<Identifier, Function> = mutableMapOf())
+
+    private val scopes: ArrayDeque<Scope> = ArrayDeque()
 
     fun enterScope() {
         scopes.add(Scope())

@@ -58,59 +58,57 @@ data class BinaryExpression(val lhs: Expression,
 ) : Expression {
     override fun <T> accept(visitor: ASTVisitor<T>): T = visitor.visitBinaryExpression(this)
 
-    companion object {
-        enum class Operator(val stringValue: String) {
-            AND("&&") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs.bool && rhs.bool).int
-            },
-            DIV("/") {
-                override fun invoke(lhs: Int, rhs: Int): Int = lhs / rhs
-            },
-            EQ("==") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs == rhs).int
-            },
-            GEQ(">=") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs >= rhs).int
-            },
-            GT(">") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs > rhs).int
-            },
-            LEQ("<=") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs <= rhs).int
-            },
-            LT("<") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs < rhs).int
-            },
-            MINUS("-") {
-                override fun invoke(lhs: Int, rhs: Int): Int = lhs - rhs
-            },
-            MOD("%") {
-                override fun invoke(lhs: Int, rhs: Int): Int = lhs % rhs
-            },
-            MUL("*") {
-                override fun invoke(lhs: Int, rhs: Int): Int = lhs * rhs
-            },
-            NEQ("!=") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs != rhs).int
-            },
-            OR("||") {
-                override fun invoke(lhs: Int, rhs: Int): Int = (lhs.bool || rhs.bool).int
-            },
-            PLUS("+") {
-                override fun invoke(lhs: Int, rhs: Int): Int = lhs + rhs
-            };
+    enum class Operator(val stringValue: String) {
+        AND("&&") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs.bool && rhs.bool).int
+        },
+        DIV("/") {
+            override fun invoke(lhs: Int, rhs: Int): Int = lhs / rhs
+        },
+        EQ("==") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs == rhs).int
+        },
+        GEQ(">=") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs >= rhs).int
+        },
+        GT(">") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs > rhs).int
+        },
+        LEQ("<=") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs <= rhs).int
+        },
+        LT("<") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs < rhs).int
+        },
+        MINUS("-") {
+            override fun invoke(lhs: Int, rhs: Int): Int = lhs - rhs
+        },
+        MOD("%") {
+            override fun invoke(lhs: Int, rhs: Int): Int = lhs % rhs
+        },
+        MUL("*") {
+            override fun invoke(lhs: Int, rhs: Int): Int = lhs * rhs
+        },
+        NEQ("!=") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs != rhs).int
+        },
+        OR("||") {
+            override fun invoke(lhs: Int, rhs: Int): Int = (lhs.bool || rhs.bool).int
+        },
+        PLUS("+") {
+            override fun invoke(lhs: Int, rhs: Int): Int = lhs + rhs
+        };
 
-            abstract operator fun invoke(lhs: Int, rhs: Int): Int
+        abstract operator fun invoke(lhs: Int, rhs: Int): Int
 
-            companion object {
-                fun operatorByStringValue(stringValue: String): Operator? = values().firstOrNull {
-                    it.stringValue == stringValue
-                }
-
-                private val Int.bool get() = this != 0
-
-                private val Boolean.int get() = if (this) 1 else 0
+        companion object {
+            fun operatorByStringValue(stringValue: String): Operator? = values().firstOrNull {
+                it.stringValue == stringValue
             }
+
+            private val Int.bool get() = this != 0
+
+            private val Boolean.int get() = if (this) 1 else 0
         }
     }
 }

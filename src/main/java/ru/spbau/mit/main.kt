@@ -34,8 +34,8 @@ internal fun interpretAST(ast: Node) {
     ast.accept(Interpreter())
 }
 
-internal fun interpretAST(ast: Node, context: Context, printStream: PrintStream) {
-    ast.accept(Interpreter(context, printStream))
+internal fun interpretAST(ast: Node, printStream: PrintStream) {
+    ast.accept(Interpreter(printStream))
 }
 
 fun interpretFile(path: Path) {
@@ -43,9 +43,9 @@ fun interpretFile(path: Path) {
     interpretAST(ast)
 }
 
-internal fun interpretFile(path: Path, context: Context, printStream: PrintStream) {
+internal fun interpretFile(path: Path, printStream: PrintStream) {
     val ast = buildAST(path)
-    interpretAST(ast, context, printStream)
+    interpretAST(ast, printStream)
 }
 
 fun main(args: Array<String>) {

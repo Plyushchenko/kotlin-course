@@ -2,25 +2,26 @@ package ru.spbau.mit.funInterpreter
 
 import java.io.PrintStream
 
-class Interpreter(private val context: Context = Context(),
-                  private val printStream: PrintStream = DEFAULT_PRINT_STREAM): ASTVisitor<Int?> {
+class Interpreter(private val printStream: PrintStream = DEFAULT_PRINT_STREAM): ASTVisitor<Int?> {
     companion object {
         val DEFAULT_PRINT_STREAM: PrintStream = System.out
     }
 
+    private val context: Context = Context()
+
     override fun visitFile(file: File): Int? = file.block.accept(this)
 
     override fun visitBlock(block: Block): Int? {
-         var result: Int? = null
          context.enterScope()
          for (statement in block.statements) {
-             result = statement.accept(this)
+             val result = statement.accept(this)
              if (result != null) {
-                 break
+                 context.leaveScope()
+                 return result
              }
          }
          context.leaveScope()
-         return result
+         return null
     }
 
     override fun visitFunction(function: Function): Int? {
@@ -35,14 +36,13 @@ class Interpreter(private val context: Context = Context(),
     }
 
     override fun visitWhileLoop(whileLoop: WhileLoop): Int? {
-        var result: Int? = null
         while (whileLoop.condition.accept(this) != 0) {
-            result = whileLoop.body.accept(this)
+            val result = whileLoop.body.accept(this)
             if (result != null) {
-                break
+                return result
             }
         }
-        return result
+        return null
     }
 
     override fun visitIfOperator(ifOperator: IfOperator): Int? {

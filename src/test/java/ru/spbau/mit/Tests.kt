@@ -20,7 +20,7 @@ class Tests {
             )
             val byteArrayOutputStream = ByteArrayOutputStream()
             val printStream = PrintStream(byteArrayOutputStream, true)
-            interpretFile(Paths.get(pathTemplateAsString + i.toString()), Context(), printStream)
+            interpretFile(Paths.get(pathTemplateAsString + i.toString()), printStream)
             assert(Arrays.equals(expected, byteArrayOutputStream.toByteArray()))
         }
     }
@@ -35,13 +35,13 @@ class Tests {
                                     BinaryExpression(
                                             BinaryExpression(
                                                     Literal("1"),
-                                                    BinaryExpression.Companion.Operator.MINUS,
+                                                    BinaryExpression.Operator.MINUS,
                                                     Literal("2")
                                             ),
-                                            BinaryExpression.Companion.Operator.MINUS,
+                                            BinaryExpression.Operator.MINUS,
                                             Literal("3")
                                     ),
-                                    BinaryExpression.Companion.Operator.MINUS,
+                                    BinaryExpression.Operator.MINUS,
                                     Literal("4")
                             )
                         ),
@@ -66,7 +66,7 @@ class Tests {
                             Identifier("x"),
                             BinaryExpression(
                                     Identifier("x"),
-                                    BinaryExpression.Companion.Operator.PLUS,
+                                    BinaryExpression.Operator.PLUS,
                                     FunctionCall(
                                             Identifier("f"),
                                             Arguments(listOf(Identifier("x")))

@@ -66,7 +66,7 @@ class BuilderVisitor : FunBaseVisitor<Node>() {
     override fun visitBinaryExpression(ctx: FunParser.BinaryExpressionContext): BinaryExpression {
         val lhs = ctx.lhs.accept(this) as Expression
         val operatorStringValue = ctx.operator.text
-        val operator = BinaryExpression.Companion.Operator.operatorByStringValue(
+        val operator = BinaryExpression.Operator.operatorByStringValue(
                 operatorStringValue
         ) ?: throw NotFoundException(operatorStringValue, NotFoundException.Companion.Type.OPERATOR)
         val rhs = ctx.rhs.accept(this) as Expression
