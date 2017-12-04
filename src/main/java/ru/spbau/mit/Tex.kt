@@ -35,7 +35,7 @@ abstract class TexElement(open protected val options: List<String> = emptyList()
     }
 }
 
-class Text(private val text: String) : TexElement(){
+class Text(private val text: String) : TexElement() {
     override fun render(builder: StringBuilder, indent: String) {
         builder.append("$indent$text")
         builder.newLine()
