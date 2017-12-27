@@ -1,6 +1,9 @@
 package ru.spbau.mit
 import kotlin.test.assertEquals
 import org.junit.Test
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+import java.util.*
 
 class TestSource {
     @Test
@@ -155,5 +158,22 @@ class TestSource {
             |\end{document}
             |""".trimMargin()
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun customPrintStreamTest() {
+        val byteOutputStream = ByteArrayOutputStream()
+        val printStream = PrintStream(byteOutputStream, true)
+        document {
+            customSingle("frac", listOf("1", "2"))
+        }.render(printStream)
+        val actual = byteOutputStream.toByteArray()
+        val expected = """
+            |\begin{document}
+            |    \frac{1}{2}
+            |\end{document}
+            |""".trimMargin().toByteArray()
+        assert(Arrays.equals(expected, actual))
+
     }
 }
