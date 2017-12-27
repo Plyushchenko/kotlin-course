@@ -1,7 +1,5 @@
 package ru.spbau.mit
 
-import java.lang.StringBuilder
-
 @DslMarker
 annotation class TexElementMarker
 
