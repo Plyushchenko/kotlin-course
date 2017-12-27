@@ -35,8 +35,6 @@ abstract class TexElement(protected val options: List<String> = emptyList(),
         render(builder)
         return builder.toString()
     }
-
-
 }
 
 class Text(private val text: String) : TexElement() {
