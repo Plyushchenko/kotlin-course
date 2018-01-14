@@ -49,6 +49,8 @@ internal fun interpretFile(path: Path, printStream: PrintStream) {
 }
 
 fun main(args: Array<String>) {
+    /*HELLO WORLD*/
+    
     try {
         if (args.isEmpty()) {
             println("First argument should be path to file which will be interpreted!")
